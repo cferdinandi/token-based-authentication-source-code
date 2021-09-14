@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Anti-Forgery Token</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<style type="text/css">
+			body {
+				margin: 0 auto;
+				max-width: 40em;
+				width: 88%;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<h1>Logged In!</h1>
+
+		<p id="app" aria-live="polite">Authenticating...</p>
+
+		<script>
+			// Get the #app element
+			let app = document.querySelector('#app');
+
+			// Get the auth code and state
+			let url = new URL(window.location.href);
+			let authCode = url.searchParams.get('code');
+			let state = url.searchParams.get('state');
+
+			// Log auth code and state
+			console.log('auth code', authCode);
+			console.log('state', state);
+
+			// Remove auth code and state from URL
+			url.searchParams.delete('code');
+			url.searchParams.delete('state');
+			history.replaceState(history.state, document.title, url.toString());
+
+			// Make sure the state parameter matches the one saved in localStorage
+			// Only request a token if it does
+			if (state && state === localStorage.getItem('csrf_state')) {
+
+				// Get the code_verifier
+				let codeVerifier = localStorage.getItem('code_verifier');
+
+				// Remove the code_verifier and state from localStorage
+				localStorage.removeItem('code_verifier');
+				localStorage.removeItem('csrf_state');
+
+				// If there's no code verifier, bail
+				// Otherwise, get a token
+				if (!codeVerifier) {
+					app.textContent = 'Something went wrong.';
+				} else {
+
+					// Remove the code_verifier from localStorage
+					localStorage.removeItem('code_verifier');
+
+					// Request a token
+					fetch('https://auth-guide.gomakethings.workers.dev?type=token', {
+						method: 'POST',
+						body: JSON.stringify({
+							code: authCode,
+							code_verifier: codeVerifier
+						}),
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					}).then(function (response) {
+						if (response.ok) {
+							return response.json();
+						}
+						throw response.status;
+					}).then(function (data) {
+
+						// Show a message
+						app.textContent = `You're logged in!`;
+
+						// Log the token data
+						console.log(data);
+
+					}).catch(function (error) {
+						console.warn(error);
+						app.textContent = 'Something went wrong.';
+					});
+
+				}
+
+			}
+		</script>
+	</body>
+</html>

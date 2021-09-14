@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Implicit Flow</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<style type="text/css">
+			body {
+				margin: 0 auto;
+				max-width: 40em;
+				width: 88%;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<h1>Logged In!</h1>
+
+		<p id="app" aria-live="polite">Loading...</p>
+
+		<script>
+			// Get the #app element
+			let app = document.querySelector('#app');
+
+			// Get the token
+			let url = new URL(window.location.href);
+			let token = url.searchParams.get('token');
+
+			// Show a message
+			app.textContent = token ? `You're logged in!` : 'Something went wrong.';
+
+			// Log the token
+			console.log(token);
+
+			// Remove token from URL
+			url.searchParams.delete('token');
+			history.replaceState(history.state, document.title, url.toString());
+		</script>
+	</body>
+</html>

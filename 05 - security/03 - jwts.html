@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Keep sensitive info out of JWTs</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+
+	<body>
+
+
+		<script>
+			// A decoded JWT payload
+			let decoded = {
+
+				// This kind of data is ok
+				username: 'merlin@wizardschool.org',
+				permissions: ['spellbook', 'stonehenge'],
+				expires: 1640408400,
+
+				// This data is not
+				address: '42 Wizard Way, Camelot',
+				secretKey: '1234abc',
+				dob: 'May 13, 1619'
+
+			};
+		</script>
+	</body>
+</html>

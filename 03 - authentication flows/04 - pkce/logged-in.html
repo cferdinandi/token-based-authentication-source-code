@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>PKCE</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<style type="text/css">
+			body {
+				margin: 0 auto;
+				max-width: 40em;
+				width: 88%;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<h1>Logged In!</h1>
+
+		<p id="app" aria-live="polite">Authenticating...</p>
+
+		<script>
+			// Get the #app element
+			let app = document.querySelector('#app');
+
+			// Get the auth code
+			let url = new URL(window.location.href);
+			let authCode = url.searchParams.get('code');
+
+			// Log auth code
+			console.log('auth code', authCode);
+
+			// Remove auth code from URL
+			url.searchParams.delete('code');
+			history.replaceState(history.state, document.title, url.toString());
+
+			// Get the code_verifier
+			let codeVerifier = localStorage.getItem('code_verifier');
+			console.log(codeVerifier);
+
+			// If there's no code verifier, bail
+			// Otherwise, get a token
+			if (!codeVerifier) {
+				app.textContent = 'Something went wrong.';
+			} else {
+
+				// Remove the code_verifier from localStorage
+				localStorage.removeItem('code_verifier');
+
+				// Request a token
+				fetch('https://auth-guide.gomakethings.workers.dev?type=token', {
+					method: 'POST',
+					body: JSON.stringify({
+						code: authCode,
+						code_verifier: codeVerifier
+					}),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				}).then(function (response) {
+					if (response.ok) {
+						return response.json();
+					}
+					throw response.status;
+				}).then(function (data) {
+
+					// Show a message
+					app.textContent = `You're logged in!`;
+
+					// Log the token data
+					console.log(data);
+
+				}).catch(function (error) {
+					console.warn(error);
+					app.textContent = 'Something went wrong.';
+				});
+
+			}
+		</script>
+	</body>
+</html>

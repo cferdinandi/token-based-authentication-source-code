@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Authorization Code Flow</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<style type="text/css">
+			body {
+				margin: 0 auto;
+				max-width: 40em;
+				width: 88%;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<h1>Log In</h1>
+
+		<button>
+			🧙‍♂️ Log in with WizardSchool
+		</button>
+
+		<script>
+			// Redirect the user when they click the button
+			// Yes, this could also be a hard-coded link
+			function logIn () {
+				let redirect = encodeURIComponent(`${window.location.href.replace('index.html', '')}/logged-in.html`);
+				window.location.href = `https://auth-guide.gomakethings.workers.dev?type=auth-code&redirect=${redirect}`;
+			}
+
+			// Listen for clicks on the button
+			let button = document.querySelector('button');
+			button.addEventListener('click', logIn);
+		</script>
+	</body>
+</html>

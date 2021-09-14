@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Rotating Refresh Tokens</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<style type="text/css">
+			body {
+				margin: 0 auto;
+				max-width: 40em;
+				width: 88%;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<h1>Logged In!</h1>
+
+		<p id="app">Refreshing your token...</p>
+
+		<script>
+			// Get the #app element
+			let app = document.querySelector('#app');
+
+			// Request a new token
+			fetch('https://auth-guide.gomakethings.workers.dev?type=refresh', {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${localStorage.getItem('refresh')}`
+				}
+			}).then(function (response) {
+				if (response.ok) {
+					return response.json();
+				}
+				throw response.status;
+			}).then(function (data) {
+
+				// Save the new auth and refresh tokens
+				localStorage.setItem('token', data.token);
+				localStorage.setItem('refresh', data.refresh);
+
+				// Continue using the app...
+				app.textContent = `Your new token is ${data.token}.`;
+
+			});
+		</script>
+	</body>
+</html>

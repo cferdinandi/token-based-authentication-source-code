@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>JWT</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+
+	<body>
+
+
+		<script>
+			/**
+			 * Decode a JWT payload
+			 * https://stackoverflow.com/a/38552302
+			 * @param  {String} token The JWT
+			 * @return {Object}       The decoded payload
+			 */
+			function parseJWT (token) {
+				let base64Url = token.split('.')[1];
+				let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+				let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+					return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+				}).join(''));
+				return JSON.parse(jsonPayload);
+			}
+
+			// The JWT
+			let token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+
+			// The payload
+			let payload = parseJWT(token);
+			console.log(payload);
+		</script>
+	</body>
+</html>
