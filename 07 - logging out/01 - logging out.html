@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Logging Out</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<style type="text/css">
+			body {
+				margin: 0 auto;
+				max-width: 40em;
+				width: 88%;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div id="app" aria-live="polite">
+			<p><button>Logout</button></p>
+		</div>
+
+		<script>
+			// Save some dummy tokens for demo purposes
+			localStorage.setItem('token', new Date().getTime());
+			localStorage.setItem('refresh', new Date().getTime() * 5);
+
+			// Get the #app element
+			let app = document.querySelector('#app');
+
+			/**
+			 * Log a user out
+			 */
+			function handleLogout () {
+
+				// Remove the auth and refresh tokens
+				localStorage.removeItem('token');
+				localStorage.removeItem('refresh');
+
+				// Option 1: update the UI
+				app.innerHTML = `<h1>You've been logged out.</h1>`;
+
+				// Option 2: redirect the user to another page
+				window.location.href = 'logged-out.html';
+
+			}
+
+			// Handle logout button
+			let btn = document.querySelector('button');
+			btn.addEventListener('click', handleLogout);
+		</script>
+	</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>WizardSchool</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<style type="text/css">
+			body {
+				margin: 0 auto;
+				max-width: 30em;
+				width: 88%;
+			}
+
+			label,
+			input {
+				display: block;
+				width: 100%;
+			}
+
+			input {
+				margin-bottom: 1em;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<div id="app"></div>
+		<p id="announce" aria-live="polite"></p>
+
+		<script>
+			/*
+
+				For this project:
+
+				- If the user is not logged in, display a login form
+				- If the user is logged in, display a list of wizards and a logout button
+				- When the login form is submitted, get auth and refresh tokens with the password flow
+				- On page load and when you get an auth token, fetch a list of wizards with it
+				- When the logout button is clicked, log the user out and reset the UI
+
+				API Endpoints:
+
+				- Get a Token (with Refresh): https://auth-guide.gomakethings.workers.dev?type=password&refresh=true
+				- Refresh a Token: https://auth-guide.gomakethings.workers.dev?type=refresh
+				- Get Wizards: https://auth-guide.gomakethings.workers.dev?type=wizards
+
+				Credentials
+
+				- Username: merlin@wizardschool.org
+				- Password: spellbook123
+
+			 */
+
+			// Get the #app and #announce elements
+			let app = document.querySelector('#app');
+			let announce = document.querySelector('#announce');
+
+			/**
+			 * Render the login screen
+			 */
+			function renderLogin () {
+
+				// Render the login form
+				app.innerHTML =
+					`<h1>Log In to WizardSchool</h1>
+					<form id="login">
+						<label for="username">Username</label>
+						<input type="text" id="username">
+
+						<label for="password">Password</label>
+						<input type="password" id="password">
+
+						<p><button>Log In</button></p>
+					</form>`;
+
+			}
+
+			/**
+			 * Render wizards into the UI
+			 * @param  {Array} wizards The wizard data
+			 */
+			function renderWizards (wizards) {
+
+				// Render the Wizard data
+				// In a real app, this should be sanitized first
+				app.innerHTML =
+					`<h1>Wizards</h1>
+					<ul>
+						${wizards.map(function (wizard) {
+							return `<li>${wizard}</li>`;
+						}).join('')}
+					</ul>
+					<p><button id="logout">Logout</button></p>`;
+
+			}
+		</script>
+	</body>
+</html>

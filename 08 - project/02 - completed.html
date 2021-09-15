@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>WizardSchool</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<style type="text/css">
+			body {
+				margin: 0 auto;
+				max-width: 30em;
+				width: 88%;
+			}
+
+			label,
+			input {
+				display: block;
+				width: 100%;
+			}
+
+			input {
+				margin-bottom: 1em;
+			}
+
+			/**
+			 * Visually hide an element, but leave it available for screen readers
+			 * @link https://github.com/h5bp/html5-boilerplate/blob/master/dist/css/main.css
+			 * @link http://snook.ca/archives/html_and_css/hiding-content-for-accessibility
+			 * @link https://github.com/h5bp/main.css/issues/12#issuecomment-321106995
+			 */
+			.visually-hidden {
+				border: 0;
+				clip: rect(0 0 0 0);
+				height: 1px;
+				overflow: hidden;
+				padding: 0;
+				position: absolute;
+				white-space: nowrap;
+				width: 1px;
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<!--
+
+			username: 'merlin@wizardschool.org',
+			password: 'spellbook123'
+
+		 -->
+
+		<div id="app"></div>
+		<p id="announce" aria-live="polite"></p>
+
+		<script>
+			// Get the #app and #announce elements
+			let app = document.querySelector('#app');
+			let announce = document.querySelector('#announce');
+
+			/**
+			 * Refresh the auth token
+			 */
+			function refreshToken () {
+
+				// Get the refresh token
+				let refresh = localStorage.getItem('refresh_token');
+
+				// If there isn't one, show the login screen
+				if (!refresh) {
+					console.warn('no refresh token');
+					renderLogin();
+					return;
+				}
+
+				// Request a new authentication token
+				fetch('https://auth-guide.gomakethings.workers.dev?type=refresh', {
+					headers: {
+						'Authorization': `Bearer ${refresh}`
+					}
+				}).then(function (response) {
+					if (response.ok) {
+						return response.json();
+					}
+					throw response.status;
+				}).then(function (data) {
+
+					// Save the new auth and refresh tokens
+					localStorage.setItem('auth_token', data.token);
+					localStorage.setItem('refresh_token', data.refresh);
+
+					// Get the wizard data
+					getWizards(data.token);
+
+				}).catch(function (error) {
+					console.warn(error);
+					renderLogin();
+				});
+
+			}
+
+			/**
+			 * Render wizards into the UI
+			 * @param  {Array} wizards The wizard data
+			 */
+			function renderWizards (wizards) {
+
+				// Announce that content is loaded and visually hide it
+				announce.innerHTML = 'Loaded';
+				announce.classList.add('visually-hidden');
+
+				// Render the Wizard data
+				// In a real app, this should be sanitized first
+				app.innerHTML =
+					`<h1>Wizards</h1>
+					<ul>
+						${wizards.map(function (wizard) {
+							return `<li>${wizard}</li>`;
+						}).join('')}
+					</ul>
+					<p><button id="logout">Logout</button></p>`;
+
+			}
+
+			/**
+			 * Get the wizard data
+			 * @param  {String} token The authentication token
+			 */
+			function getWizards (token) {
+
+				// Clear the UI an announce loading data
+				app.innerHTML = '';
+				announce.textContent = 'Loading...';
+
+				// Fetch wizard data
+				fetch('https://auth-guide.gomakethings.workers.dev?type=wizards', {
+					headers: {
+						'Authorization': `Bearer ${token}`
+					}
+				}).then(function (response) {
+					if (response.ok) {
+						return response.json();
+					}
+					throw response.status;
+				}).then(function (data) {
+					renderWizards(data);
+				}).catch(function (error) {
+					refreshToken();
+				});
+
+			}
+
+			/**
+			 * Render the login screen
+			 */
+			function renderLogin () {
+
+				// Clear any status messages
+				announce.textContent = '';
+				announce.classList.remove('visually-hidden');
+
+				// Render the login form
+				app.innerHTML =
+					`<h1>Log In to WizardSchool</h1>
+					<form id="login">
+						<label for="username">Username</label>
+						<input type="text" id="username">
+
+						<label for="password">Password</label>
+						<input type="password" id="password">
+
+						<p><button>Log In</button></p>
+					</form>`;
+
+			}
+
+			/**
+			 * Render the UI
+			 */
+			function renderUI () {
+
+				// Get the authentication token
+				let token = localStorage.getItem('auth_token');
+
+				// If there's a token, fetch wizard data
+				// Otherwise, show the login screen
+				if (token) {
+					getWizards(token);
+				} else {
+					renderLogin();
+				}
+
+			}
+
+			/**
+			 * Handle login events
+			 * @param  {Event} event The event object
+			 */
+			function handleLogin (event) {
+
+				// Only run on #login form
+				if (event.target.id !== 'login') return;
+
+				// Stop the form from reloading the page
+				event.preventDefault();
+
+				// Make sure all required fields are provided
+				let {username, password} = event.target.elements;
+				if (!username.value.length || !password.value.length) {
+					announce.textContent = 'Please provide a username and password.';
+					return;
+				}
+
+				// Prevent form from being submitted more than once
+				if (event.target.hasAttribute('data-logging-in')) return;
+				event.target.setAttribute('data-logging-in', '');
+
+				// Show login status
+				announce.textContent = 'Logging in...';
+
+				// Request an auth token with a refresh token
+				fetch('https://auth-guide.gomakethings.workers.dev?type=password&refresh=true', {
+					method: 'POST',
+					body: JSON.stringify({
+						username: username.value,
+						password: password.value
+					}),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				}).then(function (response) {
+					if (response.ok) {
+						return response.json();
+					}
+					throw response.status;
+				}).then(function (data) {
+
+					// Save tokens to localStorage
+					localStorage.setItem('auth_token', data.token);
+					localStorage.setItem('refresh_token', data.refresh);
+
+					// Fetch wizard data
+					getWizards(data.token);
+
+				}).catch(function (error) {
+
+					// Reenable form
+					event.target.removeAttribute('data-logging-in');
+
+					// Show an error message
+					announce.textContent = 'The username and password provided were invalid.';
+
+				});
+
+			}
+
+			/**
+			 * Handle logout events
+			 * @param  {Event} event The event object
+			 */
+			function handleLogout (event) {
+
+				// Only run on #logout button
+				if (event.target.id !== 'logout') return;
+
+				// Remove tokens from localStorage
+				localStorage.removeItem('auth_token');
+				localStorage.removeItem('refresh_token');
+
+				// Update the UI
+				renderLogin();
+
+			}
+
+			// Render the UI and setup event listeners
+			renderUI();
+			document.addEventListener('submit', handleLogin);
+			document.addEventListener('click', handleLogout);
+		</script>
+	</body>
+</html>
