@@ -22,7 +22,7 @@
 			 * Refresh the auth token
 			 * @param  {Function} callback A function to run after the token is refreshed
 			 */
-			function refreshToken (callback) {
+			function refreshToken () {
 				fetch('https://auth-guide.gomakethings.workers.dev?type=refresh', {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('refresh')}`
@@ -38,10 +38,8 @@
 					localStorage.setItem('token', data.token);
 					localStorage.setItem('refresh', data.refresh);
 
-					// Run the callback function
-					if (callback && typeof callback === 'function') {
-						callback();
-					}
+					// Try again
+					getWizards();
 
 				}).catch(function (error) {
 
@@ -77,9 +75,7 @@
 					console.warn(error);
 
 					// If the current token is expired, try to refresh it
-					if (error === 401) {
-						refreshToken(getWizards);
-					}
+					refreshToken();
 
 				});
 

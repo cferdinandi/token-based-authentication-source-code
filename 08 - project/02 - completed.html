@@ -222,12 +222,8 @@
 				// Request an auth token with a refresh token
 				fetch('https://auth-guide.gomakethings.workers.dev?type=password&refresh=true', {
 					method: 'POST',
-					body: JSON.stringify({
-						username: username.value,
-						password: password.value
-					}),
 					headers: {
-						'Content-Type': 'application/json'
+						'Authorization': `Basic ${btoa(`${username.value}:${password.value}`)}`
 					}
 				}).then(function (response) {
 					if (response.ok) {

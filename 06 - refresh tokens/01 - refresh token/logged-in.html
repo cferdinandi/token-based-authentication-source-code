@@ -79,6 +79,8 @@
 						localStorage.setItem('token', data.token);
 						localStorage.setItem('refresh', data.refresh);
 
+						console.log(data);
+
 						// Sometime later, refresh the token
 						setTimeout(refreshToken, 5000);
 
